@@ -1,25 +1,27 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
 <!DOCTYPE scenario SYSTEM "sipp.dtd">
 
-<!--                    SipP Scenario for call with invite auth Create By Majid
-                        Sipp default 'uac' scenario.
-
+<!--                    
+SipP Scenario for Normal call with registreation and auth invite Created By Majid
+Use with CSV file struct like: 32;192.168.1.211;[authentication username=32 password=32];21; 
+(user part of uri, server address, auth tag, call target)
 -->
 
-<scenario name="Call Invite Auth Register">
+<scenario name="Register + Invite + Call">
 
   <send retrans="500">
     <![CDATA[
 
       REGISTER sip:[remote_ip] SIP/2.0
       Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch]
-      From: <sip:[field3]@[field1]>;tag=[call_number]
-      To: <sip:[field0]@[field1]>
+      From: <sip:[field0]@[field1]>;tag=[call_number]
+      To: <sip:[field3]@[field1]>
       Call-ID: [call_id]
       CSeq: [cseq] REGISTER
-      Contact: sip:[field3]@[local_ip]:[local_port]
+      Contact: sip:[field0]@[local_ip]:[local_port]
       Max-Forwards: 10
-      User-Agent: SIPp/Win32
+      Expires: 120
+      User-Agent: SIPp/Server
       Content-Length: 0
 
     ]]>
@@ -36,14 +38,15 @@
 
       REGISTER sip:[remote_ip] SIP/2.0
       Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch]
-      From: <sip:[field3]@[field1]>;tag=[call_number]
-      To: <sip:[field0]@[field1]>
+      From: <sip:[field0]@[field1]>;tag=[call_number]
+      To: <sip:[field3]@[field1]>
       Call-ID: [call_id]
       CSeq: [cseq] REGISTER
-      Contact: sip:[field3]@[local_ip]:[local_port]
+      Contact: sip:[field0]@[local_ip]:[local_port]
       [field2]
       Max-Forwards: 10
-      User-Agent: SIPp/Win32
+      Expires: 120
+      User-Agent: SIPp/Server
       Content-Length: 0
 
     ]]>
@@ -58,13 +61,13 @@
 <send retrans="500">
     <![CDATA[
 
-      INVITE sip:[field0]@[remote_ip]:[remote_port] SIP/2.0
+      INVITE sip:[field3]@[remote_ip]:[remote_port] SIP/2.0
       Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch]
-      From:  <sip:[field3]@[field1]>;tag=[call_number]
-      To: <sip:[field0]@[field1]>
+      From:  <sip:[field0]@[field1]>;tag=[call_number]
+      To: <sip:[field3]@[field1]:[remote_port]>
       Call-ID: [call_id]
-      CSeq: 1 INVITE
-      Contact: sip:[field3]@[local_ip]:[local_port]
+      CSeq: [cseq] INVITE
+      Contact: sip:[field0]@[local_ip]:[local_port]
       Max-Forwards: 70
       Subject: Performance Test
       Content-Type: application/sdp
@@ -87,13 +90,13 @@
 <send>
   <![CDATA[
 
-    ACK sip:[field0]@[remote_ip]:[remote_port] SIP/2.0
+    ACK sip:[field3]@[remote_ip]:[remote_port] SIP/2.0
     Via: SIP/2.0/[transport] [local_ip]:[local_port]
-    From: <sip:[field3]@[field1]>;tag=[call_number]
-    To: <sip:[field0]@[field1]>
+    From: <sip:[field0]@[field1]>;tag=[call_number]
+    To: <sip:[field3]@[field1]:[remote_port]>
     Call-ID: [call_id]
-    CSeq: 1 ACK
-    Contact: sip:[field3]@[local_ip]:[local_port]
+    CSeq: [cseq] ACK
+    Contact: sip:[field0]@[local_ip]:[local_port]
     Max-Forwards: 70
     Subject: Performance Test
     Content-Length: 0
@@ -104,13 +107,13 @@
 <send retrans="500">
   <![CDATA[
 
-    INVITE sip:[field0]@[remote_ip]:[remote_port] SIP/2.0
+    INVITE sip:[field3]@[remote_ip]:[remote_port] SIP/2.0
     Via: SIP/2.0/[transport] [local_ip]:[local_port]
-    From: <sip:[field3]@[field1]>;tag=[call_number]
-    To: <sip:[field0]@[field1]>
+    From: <sip:[field0]@[field1]>;tag=[call_number]
+    To: <sip:[field3]@[field1]>
     Call-ID: [call_id]
-    CSeq: 2 INVITE
-    Contact: sip:[field3]@[local_ip]:[local_port]
+    CSeq: [cseq] INVITE
+    Contact: sip:[field0]@[local_ip]:[local_port]
     [field2]
     Max-Forwards: 70
     Subject: Performance Test
@@ -126,67 +129,59 @@
     a=rtpmap:0 PCMU/8000
 
   ]]>
-</send>
 
-  <recv response="100"
-        optional="true">
+
+  <recv response="100" optional="true">
   </recv>
 
-  <!--<recv response="180" optional="true">
-  </recv>-->
 
   <recv response="183" optional="true">
   </recv>
 
-  <!-- By adding rrs="true" (Record Route Sets), the route sets         -->
-  <!-- are saved and used for following messages sent. Useful to test   -->
-  <!-- against stateful SIP proxies/B2BUAs.                             -->
-  <recv response="200" rtd="true">
+  <recv response="200">
   </recv>
 
-  <!-- Packet lost can be simulated in any send/recv message by         -->
-  <!-- by adding the 'lost = "10"'. Value can be [1-100] percent.       -->
   <send>
     <![CDATA[
 
       ACK sip:[field3]@[remote_ip]:[remote_port] SIP/2.0
       Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch]
-      From: <sip:[field3]@[field1]>;tag=[call_number]
-      To: <sip:[field0]@[field1]>
+      From: <sip:[field0]@[field1]>;tag=[call_number]
+      [last_To:]
       Call-ID: [call_id]
-      CSeq: 1 ACK
-      Contact: sip:[field3]@[local_ip]:[local_port]
-      Max-Forwards: 70
-      Subject: Performance Test
+      CSeq: [cseq] ACK
+      Contact: sip:[field0]@[local_ip]:[local_port]
+      Max-Forwards: 10
       Content-Length: 0
 
     ]]>
   </send>
 
-  <!-- This delay can be customized by the -d command-line option       -->
-  <!-- or by adding a 'milliseconds = "value"' option here.             -->
-  <pause/>
+  <pause milliseconds="30000" />
 
-  <!-- The 'crlf' option inserts a blank line in the statistics report. -->
   <send retrans="500">
     <![CDATA[
 
       BYE sip:[field3]@[remote_ip]:[remote_port] SIP/2.0
       Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch]
       From: <sip:[field0]@[field1]>;tag=[call_number]
-      To: <sip:[field0]@[field1]>
+      [last_To:]
       Call-ID: [call_id]
-      CSeq: 2 BYE
-      Contact: sip:[field3]@[local_ip]:[local_port]
-      Max-Forwards: 70
-      Subject: Performance Test
+      CSeq: [cseq] BYE
+      Contact: sip:sipp@[local_ip]:[local_port]
+      Max-Forwards: 10
       Content-Length: 0
 
     ]]>
   </send>
 
+  <!-- The 'crlf' option inserts a blank line in the statistics report. -->
   <recv response="200" crlf="true">
   </recv>
+
+
+
+
 
   <!-- definition of the response time repartition table (unit is ms)   -->
   <ResponseTimeRepartition value="10, 20, 30, 40, 50, 100, 150, 200"/>
